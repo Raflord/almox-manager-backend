@@ -10,6 +10,9 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -53,6 +56,15 @@ func New() Service {
 	db.SetConnMaxLifetime(0)
 	db.SetMaxIdleConns(50)
 	db.SetMaxOpenConns(50)
+
+	m, err := migrate.New("file://internal/database/migrations", fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/%s", username, password, host, port, dbname))
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatal(err)
+	}
 
 	dbInstance = &service{
 		db: db,
