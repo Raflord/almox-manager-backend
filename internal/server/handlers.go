@@ -8,7 +8,7 @@ import (
 
 type RecordInputBody struct {
 	Material      string `json:"material"`
-	AverageWeight int    `json:"averageWeight"`
+	AverageWeight int    `json:"average_weight"`
 	Unit          string `json:"unit"`
 	Operator      string `json:"operator"`
 	Shift         string `json:"shift"`
