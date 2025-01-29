@@ -14,6 +14,11 @@ type RecordInputBody struct {
 	Shift         string `json:"shift"`
 }
 
+type DayData struct {
+	Material    string `json:"material"`
+	TotalWeight int    `json:"total_weight"`
+}
+
 func (s *FiberServer) HandleGetLatestCell(c *fiber.Ctx) error {
 	records, err := s.db.QueryLatestRecords()
 	if err != nil {
@@ -32,8 +37,22 @@ func (s *FiberServer) HandleGetDayCell(c *fiber.Ctx) error {
 		return c.JSON(err.Error())
 	}
 
+	sum := make(map[string]int)
+
+	for _, item := range records {
+		sum[item.Material] += item.AverageWeight
+	}
+
+	var daySum []DayData
+	for material, total := range sum {
+		daySum = append(daySum, DayData{
+			Material:    material,
+			TotalWeight: total,
+		})
+	}
+
 	c.Status(fiber.StatusOK)
-	return c.JSON(records)
+	return c.JSON(daySum)
 }
 
 func (s *FiberServer) HandlePostCellulose(c *fiber.Ctx) error {
