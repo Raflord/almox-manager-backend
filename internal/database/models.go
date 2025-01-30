@@ -13,6 +13,13 @@ type RecordInput struct {
 	Operator      string
 	Shift         string
 }
+
+type FilteredInput struct {
+	Material    string
+	FirstDate   *time.Time
+	SeccondDate *time.Time
+}
+
 type LoadRecord struct {
 	Id            string    `db:"id" json:"id"`
 	Material      string    `db:"material" json:"material"`
@@ -56,6 +63,25 @@ func (s *service) QueryDayRecords() ([]LoadRecord, error) {
 	WHERE createdAt BETWEEN ? AND ?
 	`
 	err := s.db.Select(&records, sqlQuery, firstDate, seccondDate)
+	if err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
+func (s *service) QueryFilteredRecords(inputData FilteredInput) ([]LoadRecord, error) {
+	records := []LoadRecord{}
+	sqlQuery := `
+	SELECT * 
+	FROM load_record 
+	WHERE (material = ? OR NULLIF(?, '') IS NULL)
+	AND (createdAt BETWEEN ? AND ? OR (? IS NULL AND ? IS NULL));
+	`
+	err := s.db.Select(&records, sqlQuery,
+		inputData.Material, inputData.Material,
+		inputData.FirstDate, inputData.SeccondDate,
+		inputData.FirstDate, inputData.SeccondDate)
 	if err != nil {
 		return nil, err
 	}

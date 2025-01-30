@@ -16,6 +16,7 @@ func (s *FiberServer) RegisterFiberRoutes() {
 
 	s.App.Get("/api/cellulose/latest", s.HandleGetLatestCell)
 	s.App.Get("/api/cellulose/day", s.HandleGetDayCell)
+	s.App.Post("/api/cellulose/filtered", s.HandleGetFiltered)
 	s.App.Post("/api/cellulose", s.HandlePostCellulose)
 	s.App.Put("/api/cellulose", s.HandlePutCellulose)
 	s.App.Delete("/api/cellulose", s.HandleDeleteCellulose)

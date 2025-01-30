@@ -29,6 +29,7 @@ type Service interface {
 	CreateNewRecord(RecordInput) error
 	QueryLatestRecords() ([]LoadRecord, error)
 	QueryDayRecords() ([]LoadRecord, error)
+	QueryFilteredRecords(FilteredInput) ([]LoadRecord, error)
 }
 
 type service struct {
