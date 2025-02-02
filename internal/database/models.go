@@ -76,7 +76,8 @@ func (s *service) QueryFilteredRecords(inputData FilteredInput) ([]LoadRecord, e
 	SELECT * 
 	FROM load_record 
 	WHERE (material = ? OR NULLIF(?, '') IS NULL)
-	AND (createdAt BETWEEN ? AND ? OR (? IS NULL AND ? IS NULL));
+	AND (createdAt BETWEEN ? AND ? OR (? IS NULL AND ? IS NULL))
+	ORDER BY createdAt ASC
 	`
 	err := s.db.Select(&records, sqlQuery,
 		inputData.Material, inputData.Material,
