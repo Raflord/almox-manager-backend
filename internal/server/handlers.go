@@ -8,11 +8,12 @@ import (
 )
 
 type RecordInputBody struct {
-	Material      string `json:"material"`
-	AverageWeight int    `json:"average_weight"`
-	Unit          string `json:"unit"`
-	Operator      string `json:"operator"`
-	Shift         string `json:"shift"`
+	Material      string     `json:"material"`
+	AverageWeight int        `json:"average_weight"`
+	Unit          string     `json:"unit"`
+	CreatedAt     *time.Time `json:"createdAt,omitempty"`
+	Operator      string     `json:"operator"`
+	Shift         string     `json:"shift"`
 }
 
 type FilteredInputBody struct {
@@ -93,6 +94,7 @@ func (s *FiberServer) HandlePostCellulose(c *fiber.Ctx) error {
 		Material:      body.Material,
 		AverageWeight: body.AverageWeight,
 		Unit:          body.Unit,
+		CreatedAt:     body.CreatedAt,
 		Operator:      body.Operator,
 		Shift:         body.Shift,
 	})
@@ -103,6 +105,7 @@ func (s *FiberServer) HandlePostCellulose(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusCreated)
 }
+
 func (s *FiberServer) HandlePutCellulose(c *fiber.Ctx) error {
 	return c.JSON("message: PutCellulose")
 }

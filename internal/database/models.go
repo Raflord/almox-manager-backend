@@ -10,6 +10,7 @@ type RecordInput struct {
 	Material      string
 	AverageWeight int
 	Unit          string
+	CreatedAt     *time.Time
 	Operator      string
 	Shift         string
 }
@@ -92,10 +93,10 @@ func (s *service) QueryFilteredRecords(inputData FilteredInput) ([]LoadRecord, e
 
 func (s *service) CreateNewRecord(inputData RecordInput) error {
 	sqlQuery := `
-	INSERT INTO load_record (id, material, average_weight, unit, operator, shift)
-	VALUES(?, ?, ?, ?, ?, ?)
+	INSERT INTO load_record (id, material, average_weight, unit, createdAt, operator, shift)
+	VALUES(?, ?, ?, ?, COALESCE(?, NOW()),?, ?)
 	`
-	_, err := s.db.Exec(sqlQuery, uuid.New(), inputData.Material, inputData.AverageWeight, inputData.Unit, inputData.Operator, inputData.Shift)
+	_, err := s.db.Exec(sqlQuery, uuid.New(), inputData.Material, inputData.AverageWeight, inputData.Unit, inputData.CreatedAt, inputData.Operator, inputData.Shift)
 	if err != nil {
 		return err
 	}
