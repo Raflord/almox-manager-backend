@@ -102,3 +102,15 @@ func (s *service) CreateNewRecord(inputData RecordInput) error {
 	}
 	return nil
 }
+
+func (s *service) DeleteRecord(inputData string) error {
+	sqlQuery := `
+	DELETE FROM load_record 
+	WHERE id=?
+	`
+	_, err := s.db.Exec(sqlQuery, inputData)
+	if err != nil {
+		return err
+	}
+	return nil
+}

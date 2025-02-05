@@ -8,6 +8,7 @@ import (
 )
 
 type RecordInputBody struct {
+	Id            string     `json:"id"`
 	Material      string     `json:"material"`
 	AverageWeight int        `json:"average_weight"`
 	Unit          string     `json:"unit"`
@@ -107,7 +108,22 @@ func (s *FiberServer) HandlePostCellulose(c *fiber.Ctx) error {
 }
 
 func (s *FiberServer) HandlePutCellulose(c *fiber.Ctx) error {
-	return c.JSON("message: PutCellulose")
+	type inputId struct {
+		Id string `json:"id"`
+	}
+	var body inputId
+	err := c.BodyParser(&body)
+	if err != nil {
+		return err
+	}
+
+	err = s.db.DeleteRecord(body.Id)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(err.Error())
+	}
+
+	return c.SendStatus(fiber.StatusOK)
 }
 func (s *FiberServer) HandleDeleteCellulose(c *fiber.Ctx) error {
 	return c.JSON("message: DeleteCellulose")

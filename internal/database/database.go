@@ -27,6 +27,7 @@ type Service interface {
 
 	//
 	CreateNewRecord(RecordInput) error
+	DeleteRecord(string) error
 	QueryLatestRecords() ([]LoadRecord, error)
 	QueryDayRecords() ([]LoadRecord, error)
 	QueryFilteredRecords(FilteredInput) ([]LoadRecord, error)
