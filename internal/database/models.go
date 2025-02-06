@@ -53,26 +53,31 @@ func (s *service) QueryDayRecords() ([]LoadRecord, error) {
 
 	// Work aournd to query UTC dates from DB with fixed location
 	// TODO: improve logic
-	// if err != nil {
-	// 	return nil, fmt.Errorf("Error loading location: %w", err)
-	// }
+	utcTime := time.Now().UTC()
 
-	time.Local, _ = time.LoadLocation("America/Sao_Paulo")
-	now := time.Now()
-	year := time.Now().Year()
-	month := time.Now().Month()
-	day := time.Now().Day()
+	loc, err := time.LoadLocation("America/Sao_Paulo")
+	if err != nil {
+		return nil, fmt.Errorf("Error loading location: %w", err)
+	}
 
-	fmt.Println(now)
+	localTime := utcTime.In(loc)
+	year := localTime.Year()
+	month := localTime.Month()
+	day := localTime.Day()
+
+	fmt.Println(localTime)
 
 	firstDate := time.Date(year, month, day, 3, 0, 0, 0, time.UTC)
 	seccondDate := time.Date(year, month, day+1, 2, 59, 59, 999, time.UTC)
+
+	fmt.Println(firstDate)
+	fmt.Println(seccondDate)
 
 	sqlQuery := `
 	SELECT * FROM load_record
 	WHERE createdAt BETWEEN ? AND ?
 	`
-	err := s.db.Select(&records, sqlQuery, firstDate, seccondDate)
+	err = s.db.Select(&records, sqlQuery, firstDate, seccondDate)
 	if err != nil {
 		return nil, err
 	}
