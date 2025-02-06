@@ -52,9 +52,9 @@ func (s *service) QueryDayRecords() ([]LoadRecord, error) {
 
 	// Work aournd to query UTC dates from DB
 	// TODO: improve logic
-	year := time.Now().Local().Year()
-	month := time.Now().Local().Month()
-	day := time.Now().Local().Day()
+	year := time.Now().Year()
+	month := time.Now().Month()
+	day := time.Now().Day()
 
 	firstDate := time.Date(year, month, day, 3, 0, 0, 0, time.UTC)
 	seccondDate := time.Date(year, month, day+1, 2, 59, 59, 999, time.UTC)
