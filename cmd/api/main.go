@@ -39,7 +39,6 @@ func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 }
 
 func main() {
-	time.Local, _ = time.LoadLocation("America/Sao_Paulo")
 	server := server.New()
 
 	server.RegisterFiberRoutes()

@@ -57,6 +57,7 @@ func (s *service) QueryDayRecords() ([]LoadRecord, error) {
 	// 	return nil, fmt.Errorf("Error loading location: %w", err)
 	// }
 
+	time.Local, _ = time.LoadLocation("America/Sao_Paulo")
 	now := time.Now().Local()
 	year := now.Year()
 	month := now.Month()
