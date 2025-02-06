@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,11 +51,17 @@ func (s *service) QueryLatestRecords() ([]LoadRecord, error) {
 func (s *service) QueryDayRecords() ([]LoadRecord, error) {
 	records := []LoadRecord{}
 
-	// Work aournd to query UTC dates from DB
+	// Work aournd to query UTC dates from DB with fixed location
 	// TODO: improve logic
-	year := time.Now().UTC().Year()
-	month := time.Now().UTC().Month()
-	day := time.Now().UTC().Day()
+	loc, err := time.LoadLocation("America/Sao_Paulo")
+	if err != nil {
+		return nil, fmt.Errorf("Error loading location: %w", err)
+	}
+
+	now := time.Now().In(loc)
+	year := now.Year()
+	month := now.Month()
+	day := now.Day()
 
 	firstDate := time.Date(year, month, day, 3, 0, 0, 0, time.UTC)
 	seccondDate := time.Date(year, month, day+1, 2, 59, 59, 999, time.UTC)
@@ -63,7 +70,7 @@ func (s *service) QueryDayRecords() ([]LoadRecord, error) {
 	SELECT * FROM load_record
 	WHERE createdAt BETWEEN ? AND ?
 	`
-	err := s.db.Select(&records, sqlQuery, firstDate, seccondDate)
+	err = s.db.Select(&records, sqlQuery, firstDate, seccondDate)
 	if err != nil {
 		return nil, err
 	}
