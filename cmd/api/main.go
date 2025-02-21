@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"strconv"
@@ -49,8 +48,7 @@ func main() {
 
 	go func() {
 		port, _ := strconv.Atoi(os.Getenv("PORT"))
-		ln, _ := net.Listen("tcp6", fmt.Sprintf(":%d", port))
-		err := server.Listener(ln)
+		err := server.Listen(fmt.Sprintf(":%d", port))
 		if err != nil {
 			panic(fmt.Sprintf("http server error: %s", err))
 		}
