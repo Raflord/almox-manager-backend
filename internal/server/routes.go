@@ -20,4 +20,9 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	s.App.Post("/api/cellulose", s.HandlePostCellulose)
 	s.App.Put("/api/cellulose", s.HandlePutCellulose)
 	s.App.Delete("/api/cellulose", s.HandleDeleteCellulose)
+	s.App.Get("/api/cellulose", s.handleGetCellulose)
+}
+
+func (s *FiberServer) handleGetCellulose(c *fiber.Ctx) error {
+	panic("crash")
 }
