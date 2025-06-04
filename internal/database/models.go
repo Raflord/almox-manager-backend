@@ -1,113 +1,126 @@
 package database
 
 import (
+	"almox-manager-backend/internal/types"
+	"context"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/oklog/ulid/v2"
 )
 
-type RecordInput struct {
-	Material      string
-	AverageWeight int
-	Unit          string
-	CreatedAt     *time.Time
-	Operator      string
-	Shift         string
-}
-
-type FilteredInput struct {
-	Material    string
-	FirstDate   *time.Time
-	SeccondDate *time.Time
-}
-
-type LoadRecord struct {
-	Id            string    `db:"id" json:"id"`
-	Material      string    `db:"material" json:"material"`
-	AverageWeight int       `db:"average_weight" json:"average_weight"`
-	Unit          string    `db:"unit" json:"unit"`
-	CreatedAt     time.Time `db:"createdAt" json:"createdAt"`
-	UpdatedAt     time.Time `db:"updatedAt" json:"updatedAt"`
-	Operator      string    `db:"operator" json:"operator"`
-	Shift         string    `db:"shift" json:"shift"`
-}
-
-func (s *service) QueryLatestRecords() ([]LoadRecord, error) {
-	records := make([]LoadRecord, 10)
+func (s *service) QueryLatest() ([]types.Load, error) {
 	sqlQuery := `
-	SELECT * FROM load_record
-	ORDER BY createdAt DESC
+	SELECT * FROM loads
+	ORDER BY created_at DESC
 	LIMIT 10
 	`
-	err := s.db.Select(&records, sqlQuery)
+	rows, err := s.db.Query(context.Background(), sqlQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	return records, nil
-}
-
-func (s *service) QueryDayRecords() ([]LoadRecord, error) {
-	records := []LoadRecord{}
-
-	now := time.Now()
-	year := now.Year()
-	month := now.Month()
-	day := now.Day()
-
-	firstDate := time.Date(year, month, day, 3, 0, 0, 0, time.UTC)
-	seccondDate := time.Date(year, month, day+1, 2, 59, 59, 999, time.UTC)
-
-	sqlQuery := `
-	SELECT * FROM load_record
-	WHERE createdAt BETWEEN ? AND ?
-	`
-	err := s.db.Select(&records, sqlQuery, firstDate, seccondDate)
+	loads, err := pgx.CollectRows(rows, pgx.RowToStructByName[types.Load])
 	if err != nil {
 		return nil, err
 	}
 
-	return records, nil
+	return loads, nil
 }
 
-func (s *service) QueryFilteredRecords(inputData FilteredInput) ([]LoadRecord, error) {
-	records := []LoadRecord{}
+func (s *service) QueryDay() ([]types.LoadSummary, error) {
+	now := time.Now().Format(time.DateOnly)
+
 	sqlQuery := `
-	SELECT * 
-	FROM load_record 
-	WHERE (material = ? OR NULLIF(?, '') IS NULL)
-	AND (createdAt BETWEEN ? AND ? OR (? IS NULL AND ? IS NULL))
-	ORDER BY createdAt ASC
+	SELECT material, SUM(average_weight) AS total_weight
+	FROM loads
+	WHERE created_at::date=$1
+	GROUP BY material
 	`
-	err := s.db.Select(&records, sqlQuery,
-		inputData.Material, inputData.Material,
-		inputData.FirstDate, inputData.SeccondDate,
-		inputData.FirstDate, inputData.SeccondDate)
+	rows, err := s.db.Query(context.Background(), sqlQuery, now)
 	if err != nil {
 		return nil, err
 	}
 
-	return records, nil
+	loads, err := pgx.CollectRows(rows, pgx.RowToStructByName[types.LoadSummary])
+	if err != nil {
+		return nil, err
+	}
+
+	return loads, nil
 }
 
-func (s *service) CreateNewRecord(inputData RecordInput) error {
+func (s *service) QueryFiltered(inputData types.LoadFiltered) ([]types.Load, error) {
 	sqlQuery := `
-	INSERT INTO load_record (id, material, average_weight, unit, createdAt, operator, shift)
-	VALUES(?, ?, ?, ?, COALESCE(?, NOW()),?, ?)
+	SELECT *
+	FROM loads
+	WHERE (material = $1 OR NULLIF($1, '') IS NULL)
+	  AND (
+	    (
+	      NULLIF($2, '') IS NOT NULL AND
+	      NULLIF($3, '') IS NOT NULL AND
+	      created_at::date BETWEEN $2::date AND $3::date
+	    )
+		OR (
+		  NULLIF($2, '') IS NOT NULL AND
+		  NULLIF($3, '') IS NULL AND
+	      created_at::date = $2::date
+		)
+	    OR (
+	      NULLIF($2, '') IS NULL AND
+	      NULLIF($3, '') IS NULL
+	    )
+	  )
+	ORDER BY created_at ASC
 	`
-	_, err := s.db.Exec(sqlQuery, uuid.New(), inputData.Material, inputData.AverageWeight, inputData.Unit, inputData.CreatedAt, inputData.Operator, inputData.Shift)
+
+	rows, err := s.db.Query(context.Background(), sqlQuery, inputData.Material, inputData.FirstDate, inputData.SeccondDate)
+	if err != nil {
+		return nil, err
+	}
+
+	loads, err := pgx.CollectRows(rows, pgx.RowToStructByName[types.Load])
+	if err != nil {
+		return nil, err
+	}
+
+	return loads, nil
+}
+
+func (s *service) CreateLoad(inputData types.Load) error {
+	sqlQuery := `
+	INSERT INTO loads (id, material, average_weight, unit, created_at, timezone, operator, shift)
+	VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+	`
+	_, err := s.db.Exec(context.Background(), sqlQuery, ulid.Make().String(), inputData.Material, inputData.AverageWeight, inputData.Unit, inputData.CreatedAt, inputData.Timezone, inputData.Operator, inputData.Shift)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *service) DeleteRecord(inputData string) error {
+func (s *service) UpdateLoad(inputData types.Load) error {
 	sqlQuery := `
-	DELETE FROM load_record 
-	WHERE id=?
+	UPDATE loads
+	SET material=$1,
+		created_at=$2,
+		operator=$3,
+		shift=$4
+	WHERE id=$5
 	`
-	_, err := s.db.Exec(sqlQuery, inputData)
+	_, err := s.db.Exec(context.Background(), sqlQuery, inputData.Material, inputData.CreatedAt, inputData.Operator, inputData.Shift, inputData.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) DeleteLoad(inputData string) error {
+	sqlQuery := `
+	DELETE FROM loads
+	WHERE id=$1
+	`
+	_, err := s.db.Exec(context.Background(), sqlQuery, inputData)
 	if err != nil {
 		return err
 	}

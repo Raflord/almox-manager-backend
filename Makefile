@@ -62,6 +62,3 @@ watch:
         fi
 
 .PHONY: all build run test clean watch docker-run docker-down itest
-
-create-migration:
-	@migrate create -ext sql -dir internal/database/migrations -seq $(migration_name) 
