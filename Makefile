@@ -1,4 +1,8 @@
-# Simple Makefile for a Go project
+# Import variables from .env
+include .env
+
+# Get command line argument
+ARGS = $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 
 # Build the application
 all: build test
@@ -12,6 +16,7 @@ build:
 # Run the application
 run:
 	@go run cmd/api/main.go
+
 # Create DB container
 docker-run:
 	@if docker compose up --build 2>/dev/null; then \
@@ -34,6 +39,7 @@ docker-down:
 test:
 	@echo "Testing..."
 	@go test ./... -v
+
 # Integrations Tests for the application
 itest:
 	@echo "Running integration tests..."
@@ -60,5 +66,18 @@ watch:
                 exit 1; \
             fi; \
         fi
+
+# Migrations
+migratecreate:
+	migrate create -ext sql -dir ${MIGRATION_PATH} -seq $(ARGS)
+
+migrateup:
+	migrate -database ${DB_STRING} -path ${MIGRATION_PATH} up
+
+migratedown:
+	migrate -database ${DB_STRING} -path ${MIGRATION_PATH} down $(ARGS)
+
+migratereset:
+	migrate -database ${DB_STRING} -path ${MIGRATION_PATH} down
 
 .PHONY: all build run test clean watch docker-run docker-down itest

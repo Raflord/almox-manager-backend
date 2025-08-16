@@ -6,10 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"sync"
 	"time"
-
-	"almox-manager-backend/internal/types"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
@@ -24,47 +21,10 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close()
-
-	// Celulose
-	CreateLoad(types.Load) error
-	UpdateLoad(types.Load) error
-	DeleteLoad(string) error
-	QueryLatest() ([]types.Load, error)
-	QueryDay() ([]types.LoadSummary, error)
-	QueryFiltered(types.LoadFiltered) ([]types.Load, error)
-
-	// Insumos
 }
 
 type service struct {
 	db *pgxpool.Pool
-}
-
-var (
-	dbname     = os.Getenv("DB_DATABASE")
-	password   = os.Getenv("DB_PASSWORD")
-	username   = os.Getenv("DB_USERNAME")
-	port       = os.Getenv("DB_PORT")
-	host       = os.Getenv("DB_HOST")
-	dbInstance *service
-	pgOnce     sync.Once
-)
-
-func New() Service {
-	// Reuse Connection
-	if dbInstance != nil {
-		return dbInstance
-	}
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, dbname)
-	pgOnce.Do(func() {
-		db, err := pgxpool.New(context.Background(), connStr)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		dbInstance = &service{db}
-	})
-	return dbInstance
 }
 
 // Health checks the health of the database connection by pinging the database.
@@ -123,6 +83,6 @@ func (s *service) Health() map[string]string {
 // If the connection is successfully closed, it returns nil.
 // If an error occurs while closing the connection, it returns the error.
 func (s *service) Close() {
-	log.Printf("Disconnected from database: %s", dbname)
+	log.Printf("Disconnected from database: %s", os.Getenv("DB_DATABASE"))
 	s.db.Close()
 }
