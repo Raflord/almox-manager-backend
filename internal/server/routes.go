@@ -17,18 +17,10 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	api := s.App.Group("/api")
 
 	celulose := api.Group("/celulose")
-	celulose.Post("/", s.HandleCreate)
+	celulose.Post("/", s.HandleCreateLoad)
 	celulose.Get("/latest", s.HandleGetLatest)
 	celulose.Get("/day", s.HandleGetSummary)
-	celulose.Post("/filtered", s.HandleFiltered)
-	celulose.Put("/:id", s.HandleUpdate)
-	celulose.Delete("/:id", s.HandleDelete)
-
-	// insumos := api.Group("/insumos")
-	// insumos.Post("/")
-	// insumos.Get("/latest")
-	// insumos.Get("/day")
-	// insumos.Post("/filtered")
-	// insumos.Put("/:id")
-	// insumos.Delete("/:id")
+	celulose.Post("/filtered", s.HandleGetFiltered)
+	celulose.Patch("/:id", s.HandleUpdateLoad)
+	celulose.Delete("/:id", s.HandleDeleteLoad)
 }

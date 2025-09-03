@@ -3,9 +3,9 @@ package types
 import "time"
 
 type LoadFiltered struct {
-	Material    string `json:"material"`
-	FirstDate   string `json:"firstDate"`
-	SeccondDate string `json:"seccondDate"`
+	Material   string `json:"material"`
+	FirstDate  string `json:"firstDate"`
+	SecondDate string `json:"secondDate"`
 }
 
 type LoadSummary struct {
