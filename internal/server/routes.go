@@ -19,6 +19,7 @@ func (s *FiberServer) RegisterFiberRoutes() {
 	celulose := api.Group("/celulose")
 	celulose.Post("/", s.HandleCreateLoad)
 	celulose.Get("/latest", s.HandleGetLatest)
+	celulose.Get("/:id", s.HandleGetById)
 	celulose.Get("/day", s.HandleGetSummary)
 	celulose.Post("/filtered", s.HandleGetFiltered)
 	celulose.Patch("/:id", s.HandleUpdateLoad)

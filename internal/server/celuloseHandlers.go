@@ -64,6 +64,17 @@ func (s *FiberServer) HandleGetSummary(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(loads)
 }
 
+func (s *FiberServer) HandleGetById(c *fiber.Ctx) error {
+	loads, err := s.db.GetById(context.Background(), c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Load does not exists",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(loads)
+}
+
 func (s *FiberServer) HandleGetFiltered(c *fiber.Ctx) error {
 	var body LoadFilteredBody
 	if err := c.BodyParser(&body); err != nil {
@@ -146,6 +157,13 @@ func (s *FiberServer) HandleCreateLoad(c *fiber.Ctx) error {
 }
 
 func (s *FiberServer) HandleUpdateLoad(c *fiber.Ctx) error {
+	_, err := s.db.GetById(context.Background(), c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Load does not exists",
+		})
+	}
+
 	var body LoadUpdateBody
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -201,7 +219,14 @@ func (s *FiberServer) HandleUpdateLoad(c *fiber.Ctx) error {
 }
 
 func (s *FiberServer) HandleDeleteLoad(c *fiber.Ctx) error {
-	err := s.db.DeleteLoad(c.Context(), c.Params("id"))
+	_, err := s.db.GetById(context.Background(), c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Load does not exists",
+		})
+	}
+
+	err = s.db.DeleteLoad(c.Context(), c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"Error": "Could not delete load",

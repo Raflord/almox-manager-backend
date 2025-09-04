@@ -51,6 +51,31 @@ func (q *Queries) DeleteLoad(ctx context.Context, id string) error {
 	return err
 }
 
+const getById = `-- name: GetById :one
+SELECT
+    id, material, average_weight, unit, created_at, timezone, operator, shift
+FROM
+    loads
+WHERE
+    id = $1
+`
+
+func (q *Queries) GetById(ctx context.Context, id string) (Load, error) {
+	row := q.db.QueryRow(ctx, getById, id)
+	var i Load
+	err := row.Scan(
+		&i.ID,
+		&i.Material,
+		&i.AverageWeight,
+		&i.Unit,
+		&i.CreatedAt,
+		&i.Timezone,
+		&i.Operator,
+		&i.Shift,
+	)
+	return i, err
+}
+
 const getFiltered = `-- name: GetFiltered :many
 SELECT
     id, material, average_weight, unit, created_at, timezone, operator, shift

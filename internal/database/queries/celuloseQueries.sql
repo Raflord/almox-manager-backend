@@ -1,3 +1,11 @@
+-- name: GetById :one
+SELECT
+    *
+FROM
+    loads
+WHERE
+    id = $1;
+
 -- name: GetLatest :many
 SELECT
     *
