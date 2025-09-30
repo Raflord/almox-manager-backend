@@ -12,8 +12,8 @@ import (
 )
 
 const createLoad = `-- name: CreateLoad :exec
-INSERT INTO loads (id, material, average_weight, unit, created_at, timezone, operator, shift)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO loads (id, material, average_weight, unit, created_at, operator, shift)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type CreateLoadParams struct {
@@ -22,7 +22,6 @@ type CreateLoadParams struct {
 	AverageWeight int32            `json:"averageWeight"`
 	Unit          string           `json:"unit"`
 	CreatedAt     pgtype.Timestamp `json:"createdAt"`
-	Timezone      pgtype.Text      `json:"timezone"`
 	Operator      string           `json:"operator"`
 	Shift         string           `json:"shift"`
 }
@@ -34,7 +33,6 @@ func (q *Queries) CreateLoad(ctx context.Context, arg CreateLoadParams) error {
 		arg.AverageWeight,
 		arg.Unit,
 		arg.CreatedAt,
-		arg.Timezone,
 		arg.Operator,
 		arg.Shift,
 	)
@@ -53,7 +51,7 @@ func (q *Queries) DeleteLoad(ctx context.Context, id string) error {
 
 const getById = `-- name: GetById :one
 SELECT
-    id, material, average_weight, unit, created_at, timezone, operator, shift
+    id, material, average_weight, unit, created_at, operator, shift
 FROM
     loads
 WHERE
@@ -69,7 +67,6 @@ func (q *Queries) GetById(ctx context.Context, id string) (Load, error) {
 		&i.AverageWeight,
 		&i.Unit,
 		&i.CreatedAt,
-		&i.Timezone,
 		&i.Operator,
 		&i.Shift,
 	)
@@ -78,7 +75,7 @@ func (q *Queries) GetById(ctx context.Context, id string) (Load, error) {
 
 const getFiltered = `-- name: GetFiltered :many
 SELECT
-    id, material, average_weight, unit, created_at, timezone, operator, shift
+    id, material, average_weight, unit, created_at, operator, shift
 FROM
     loads
 WHERE (material = $1
@@ -116,7 +113,6 @@ func (q *Queries) GetFiltered(ctx context.Context, arg GetFilteredParams) ([]Loa
 			&i.AverageWeight,
 			&i.Unit,
 			&i.CreatedAt,
-			&i.Timezone,
 			&i.Operator,
 			&i.Shift,
 		); err != nil {
@@ -132,7 +128,7 @@ func (q *Queries) GetFiltered(ctx context.Context, arg GetFilteredParams) ([]Loa
 
 const getLatest = `-- name: GetLatest :many
 SELECT
-    id, material, average_weight, unit, created_at, timezone, operator, shift
+    id, material, average_weight, unit, created_at, operator, shift
 FROM
     loads
 ORDER BY
@@ -155,7 +151,6 @@ func (q *Queries) GetLatest(ctx context.Context) ([]Load, error) {
 			&i.AverageWeight,
 			&i.Unit,
 			&i.CreatedAt,
-			&i.Timezone,
 			&i.Operator,
 			&i.Shift,
 		); err != nil {

@@ -19,7 +19,6 @@ type LoadBody struct {
 	AverageWeight int32  `json:"averageWeight" validate:"required"`
 	Unit          string `json:"unit" validate:"required"`
 	CreatedAt     string `json:"createdAt" validate:"required"`
-	Timezone      string `json:"timezone" validate:"required"`
 	Operator      string `json:"operator" validate:"required"`
 	Shift         string `json:"shift" validate:"required"`
 }
@@ -143,7 +142,6 @@ func (s *FiberServer) HandleCreateLoad(c *fiber.Ctx) error {
 		AverageWeight: body.AverageWeight,
 		Unit:          body.Unit,
 		CreatedAt:     pgtype.Timestamp{Time: parsedDateTime, Valid: true},
-		Timezone:      pgtype.Text{String: body.Timezone, Valid: true},
 		Operator:      body.Operator,
 		Shift:         body.Shift,
 	})

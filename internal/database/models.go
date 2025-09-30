@@ -14,7 +14,6 @@ type Load struct {
 	AverageWeight int32            `json:"averageWeight"`
 	Unit          string           `json:"unit"`
 	CreatedAt     pgtype.Timestamp `json:"createdAt"`
-	Timezone      pgtype.Text      `json:"timezone"`
 	Operator      string           `json:"operator"`
 	Shift         string           `json:"shift"`
 }

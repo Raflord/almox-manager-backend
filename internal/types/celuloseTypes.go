@@ -19,7 +19,6 @@ type Load struct {
 	AverageWeight int       `db:"average_weight" json:"averageWeight"`
 	Unit          string    `db:"unit" json:"unit"`
 	CreatedAt     time.Time `db:"created_at" json:"createdAt"`
-	Timezone      string    `db:"timezone" json:"timezone"`
 	Operator      string    `db:"operator" json:"operator"`
 	Shift         string    `db:"shift" json:"shift"`
 }

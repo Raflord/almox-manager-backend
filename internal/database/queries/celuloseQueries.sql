@@ -45,8 +45,8 @@ ORDER BY
     created_at ASC;
 
 -- name: CreateLoad :exec
-INSERT INTO loads (id, material, average_weight, unit, created_at, timezone, operator, shift)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+INSERT INTO loads (id, material, average_weight, unit, created_at, operator, shift)
+    VALUES ($1, $2, $3, $4, $5, $6, $7);
 
 -- name: UpdateLoad :exec
 UPDATE
